@@ -12,14 +12,14 @@ namespace API.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<AppUser>>> GetUsers()
         {
-            var users = await context.Users.ToListAsync();
+            var users = await context.Felhasznalok.ToListAsync();
             return users;
         }
 
         [HttpGet("{id:int}")]
         public async Task<ActionResult<AppUser>> GetUser(int id)
         {
-            var user =await context.Users.FindAsync(id);
+            var user =await context.Felhasznalok.FindAsync(id);
 
             if (user == null) { return NotFound(); }
             return user;
