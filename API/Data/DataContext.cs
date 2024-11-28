@@ -13,6 +13,10 @@ namespace API.Data
         public DbSet<Stock> Keszlet { get; set; }
         public DbSet<Logistic> Mozgatas { get; set; }
 
+        //View modellek
+
+        public DbSet<ViewModelKeszlet> ViewModelKeszlet { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
 
         {
@@ -29,15 +33,13 @@ namespace API.Data
             modelBuilder.Entity<Stock>()
                 .HasOne(s => s.Product)
                 .WithMany(p => p.Stocks) // Több Stock egy Producthoz
-                .HasForeignKey(s => s.ProductId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .HasForeignKey(s => s.ProductId);
 
             // Stock kapcsolatok: Warehouse
             modelBuilder.Entity<Stock>()
                 .HasOne(s => s.Warehouse)
                 .WithMany(w => w.Stocks) // Több Stock egy Warehouse-hoz
-                .HasForeignKey(s => s.WarehouseId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .HasForeignKey(s => s.WarehouseId);
 
             // Logistic: kompozit kulcs
             modelBuilder.Entity<Logistic>()
@@ -47,27 +49,32 @@ namespace API.Data
             modelBuilder.Entity<Logistic>()
                 .HasOne(l => l.Source)
                 .WithMany(w => w.SourceLogistics)
-                .HasForeignKey(l => l.SourceId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .HasForeignKey(l => l.SourceId);
 
             modelBuilder.Entity<Logistic>()
                 .HasOne(l => l.Destination)
                 .WithMany(w => w.DestinationLogistics)
-                .HasForeignKey(l => l.DestinationId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .HasForeignKey(l => l.DestinationId);
 
             modelBuilder.Entity<Logistic>()
                 .HasOne(l => l.Product)
                 .WithMany(p => p.Logistics)
-                .HasForeignKey(l => l.ProductId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .HasForeignKey(l => l.ProductId);
 
             // AppUser és Role kapcsolata
             modelBuilder.Entity<AppUser>()
                 .HasOne(u => u.Role)
                 .WithMany(r => r.Users)
-                .HasForeignKey(u => u.RoleId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .HasForeignKey(u => u.RoleId);
+
+
+            //view modellek
+            modelBuilder
+            .Entity<ViewModelKeszlet>()
+            .ToView("ViewModelKeszlet") // Nézet neve az adatbázisban
+            .HasNoKey();               // Megadjuk, hogy nincs kulcs
+
+          
         }
     }
     

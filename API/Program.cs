@@ -1,7 +1,11 @@
 using API.BusinessLayer;
 using API.Data;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Pomelo.EntityFrameworkCore.MySql;
+using System.Text;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,9 +24,35 @@ builder.Services.AddDbContext<DataContext>(
 );
 builder.Services.AddScoped<BusinessLogic>();
 builder.Services.AddCors();
+builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        var tokenKey = builder.Configuration["TokenKey"] ?? throw new Exception("Token nit found");
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(tokenKey)),
+            ValidateIssuer = false,
+            ValidateAudience = false
+        };
+        
+
+    });
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("admin", policy =>
+        policy.RequireClaim("RoleId", "1")); // Csak azoknak engedélyezi az írást, akiknek RoleId = 1
+});
 var app = builder.Build();
 
-app.UseCors(x=>x.AllowAnyHeader().AllowAnyMethod().WithOrigins("http://localhost:4200", "https://localhost:4200"));
+app.UseCors(x => x.AllowAnyHeader().AllowAnyMethod().WithOrigins("http://localhost:4200", "https://localhost:4200"));
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+
 app.MapControllers();
 
 app.Run();
